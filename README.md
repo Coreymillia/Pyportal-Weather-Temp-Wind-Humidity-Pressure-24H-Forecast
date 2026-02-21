@@ -4,6 +4,10 @@ A CircuitPython weather display for the **Adafruit PyPortal** that shows current
 
 ![PyPortal Weather Station](weather_background.bmp)
 
+## Preview
+
+![Live photo of PyPortal running the weather station](https://raw.githubusercontent.com/Coreymillia/Pyportal-Weather-Temp-Wind-Humidity-Pressure-24H-Forecast/main/IMG_20260221_000100.jpg)
+
 ---
 
 ## Features
