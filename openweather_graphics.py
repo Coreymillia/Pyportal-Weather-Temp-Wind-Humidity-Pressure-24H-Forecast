@@ -213,8 +213,12 @@ class OpenWeather_Graphics(displayio.Group):
         print("Set icon to", filename)
         if self._icon_group:
             self._icon_group.pop()
+        # Release old sprite and bitmap before loading new one to free memory/file handles
+        self._icon_sprite = None
+        self._icon_file = None
+        gc.collect()
         if not filename:
             return
-        icon = displayio.OnDiskBitmap(filename)
-        self._icon_sprite = displayio.TileGrid(icon, pixel_shader=icon.pixel_shader)
+        self._icon_file = displayio.OnDiskBitmap(filename)
+        self._icon_sprite = displayio.TileGrid(self._icon_file, pixel_shader=self._icon_file.pixel_shader)
         self._icon_group.append(self._icon_sprite)

@@ -13,6 +13,7 @@ import gc
 import sys
 import time
 import board
+import supervisor
 from adafruit_pyportal import PyPortal
 cwd = ("/"+__file__).rsplit('/', 1)[0] # the current working directory (where this file is)
 sys.path.append(cwd)
@@ -55,37 +56,47 @@ gfx = openweather_graphics.OpenWeather_Graphics(pyportal.root_group, am_pm=True,
 
 localtile_refresh = None
 weather_refresh = None
-while True:
-    # only query the online time once per hour (and on first run)
-    if (not localtile_refresh) or (time.monotonic() - localtile_refresh) > 3600:
-        try:
-            print("Getting time from internet!")
-            pyportal.get_local_time()
-            localtile_refresh = time.monotonic()
-        except RuntimeError as e:
-            print("Some error occured, retrying! -", e)
-            continue
-
-    # only query the weather every 10 minutes (and on first run)
-    if (not weather_refresh) or (time.monotonic() - weather_refresh) > 600:
-        try:
-            value = pyportal.fetch()
-            gfx.display_weather(value)
-            del value
-            gc.collect()
+try:
+    while True:
+        # only query the online time once per hour (and on first run)
+        if (not localtile_refresh) or (time.monotonic() - localtile_refresh) > 3600:
             try:
-                print("Fetching forecast...")
-                forecast = pyportal.fetch(refresh_url=FORECAST_URL)
-                pyportal._url = DATA_SOURCE
-                gfx.display_forecast(forecast)
-                print("Forecast done.")
+                print("Getting time from internet!")
+                pyportal.get_local_time()
+                localtile_refresh = time.monotonic()
             except Exception as e:
-                pyportal._url = DATA_SOURCE
-                print("Forecast failed:", e)
-            weather_refresh = time.monotonic()
-        except RuntimeError as e:
-            print("Some error occured, retrying! -", e)
-            continue
+                print("Time sync error, retrying! -", e)
+                continue
 
-    gfx.update_time()
-    time.sleep(30)  # wait 30 seconds before updating anything again
+        # only query the weather every 10 minutes (and on first run)
+        if (not weather_refresh) or (time.monotonic() - weather_refresh) > 600:
+            try:
+                value = pyportal.fetch()
+                gfx.display_weather(value)
+                del value
+                gc.collect()
+                try:
+                    print("Fetching forecast...")
+                    forecast = pyportal.fetch(refresh_url=FORECAST_URL)
+                    pyportal._url = DATA_SOURCE
+                    gfx.display_forecast(forecast)
+                    del forecast
+                    gc.collect()
+                    print("Forecast done.")
+                except Exception as e:
+                    pyportal._url = DATA_SOURCE
+                    print("Forecast failed:", e)
+                weather_refresh = time.monotonic()
+            except Exception as e:
+                print("Weather fetch error, retrying! -", e)
+                gc.collect()
+                continue
+
+        gfx.update_time()
+        time.sleep(30)  # wait 30 seconds before updating anything again
+
+except Exception as e:
+    # Catch anything that slips through (MemoryError, etc.) and soft-reboot
+    print("Fatal error, rebooting in 5s:", e)
+    time.sleep(5)
+    supervisor.reload()
