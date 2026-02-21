@@ -1,0 +1,5 @@
+CIRCUITPY_WIFI_SSID = "your-wifi-ssid"
+CIRCUITPY_WIFI_PASSWORD = "your-wifi-password"
+ADAFRUIT_AIO_USERNAME = "your-adafruit-io-username"
+ADAFRUIT_AIO_KEY = "your-adafruit-io-key"
+openweather_token = "your-openweathermap-api-key"
