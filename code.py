@@ -65,8 +65,8 @@ try:
                 pyportal.get_local_time()
                 localtile_refresh = time.monotonic()
             except Exception as e:
-                print("Time sync error, retrying! -", e)
-                continue
+                print("Time sync failed, will retry next cycle -", e)
+                localtile_refresh = time.monotonic()  # back off so we don't hammer it
 
         # only query the weather every 10 minutes (and on first run)
         if (not weather_refresh) or (time.monotonic() - weather_refresh) > 600:
