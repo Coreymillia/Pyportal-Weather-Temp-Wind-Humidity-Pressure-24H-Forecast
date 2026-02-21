@@ -88,9 +88,9 @@ try:
                     print("Forecast failed:", e)
                 weather_refresh = time.monotonic()
             except Exception as e:
-                print("Weather fetch error, retrying! -", e)
+                print("Weather fetch error, will retry in 10min -", e)
                 gc.collect()
-                continue
+                weather_refresh = time.monotonic()  # back off, don't hammer the API
 
         gfx.update_time()
         time.sleep(30)  # wait 30 seconds before updating anything again
